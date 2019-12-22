@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Phong Reflection Model</title>
+
+
+  <link href="css/index.css" rel="stylesheet" type="text/css" media="all">
+  <link href="css/custom_styles.css" rel="stylesheet" type="text/css" media="all">
+
+
+
+  <!--**********************************************
+      SCRIPTS BIBLIOTECAS DE AYUDA PARA ROTACIONES 3D
+    ***********************************************  -->
+  <script defer type="text/javascript" src="./js/gl-matrix-min.js"></script>
+
+  <script defer type="text/javascript" src="./js/constantes.js"></script>
+  <script defer type="text/javascript" src="./js/auxiliares.js"></script>
+  <script defer type="text/javascript" src="./js/primitives.js"></script>
+  <script defer type="text/javascript" src="./js/objects.js"></script>
+  <script defer type="text/javascript" src="./js/eventos.js"></script>
+  <script defer type="text/javascript" src="./js/webgl.js"></script>
+
+
+
+  <!-- ****************   VERTEX SHADER *******************-->
+  <script id="vertex-shader" type="x-shader/x-vertex">
+  // Atributos basicos
+  attribute vec3 aVertexPosition;
+  attribute vec3 aVertexNormal;
+  attribute vec3 aVertexTexture;
+  // attribute vec4 aVertexColor;
+
+  //Matriz de trasnformación
+  uniform mat4 uTMatrix;
+  uniform mat4 uMvMatrix;
+  uniform mat4 uSMatrix;
+  uniform mat4 uCMatrix;
+  uniform mat4 uPMatrix;
+
+  uniform vec3 lightPosition;
+
+  varying vec3 N; // Normal en el espacio camara
+  varying vec3 v; // Vertices espacio camara
+  varying vec3 lp;  // Posicion luz espacio camara
+  varying vec3 v_normal; // Para las texturas
+
+  void main() {
+
+    mat4 M = uMvMatrix*uTMatrix;
+
+    vec4 vertex = uCMatrix*M*vec4(aVertexPosition,1.0);
+    v = vertex.xyz;
+    N = (normalize(uCMatrix*M*vec4(aVertexNormal, 0.0))).xyz;
+    lp = (uCMatrix*vec4(lightPosition,1)).xyz;
+
+    gl_Position= uPMatrix*uSMatrix*vertex;
+    v_normal = normalize(aVertexTexture);
+
+
+}
+</script>
+
+  <!-- ****************   FRAGMENT SHADER *******************-->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+  precision highp float;
+
+  // Luces
+  uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+  uniform float shininess;
+  // Texturas
+  uniform samplerCube u_texture;
+
+  varying vec3 N; // Normal en el espacio camara
+  varying vec3 v; // Vertices espacio camara
+  varying vec3 lp;  // Posicion luz espacio camara
+  varying vec3 v_normal; // Para las texturas
+
+  void main() {
+
+      vec3 L = normalize(lp-v);
+      vec3 E = normalize(-v);
+      vec3 R = normalize(-reflect(L,N));
+
+      //calculate Ambient Term:
+      vec4 Iamb = ambientProduct;
+      Iamb = Iamb*Iamb.a;
+
+      //calculate Diffuse Term:
+      vec4 Idiff = diffuseProduct * max(dot(N,L), 0.0);
+      Idiff = clamp(Idiff, 0.0, 1.0);
+      Idiff = Idiff*Idiff.a;
+
+      // calculate Specular Term:
+      vec4 Ispec = specularProduct * pow(max(dot(R,E),0.0), shininess);
+      Ispec = clamp(Ispec, 0.0, 1.0);
+      Ispec = Ispec*Ispec.a;
+
+      vec4 ligth = vec4(Iamb.rgb + Idiff.rgb + Ispec.rgb,1);
+
+      gl_FragColor = textureCube(u_texture, normalize(v_normal)) * ligth;
+  }
+</script>
+
+
+  <!-- ****************                    *******************-->
+  <!-- ****************        HTML        *******************-->
+  <!-- ****************                    *******************-->
+
+</head>
+
+<body onload="initWebGL()">
+  <header class="blackBox">
+    <h1 class="text-center"><span class="text-light">Phong Reflection Model</span></h1>
+  </header>
+  <main>
+    <canvas id="canvas" width="3840px" height="1600px"></canvas>
+  </main>
+
+  <aside class="container-vertical greyBox" id="rigthAside">
+    <form action="#">
+      <div>
+        <label class="switch"><p id="rotate-text">Rotar Objetos</p>
+          <input type="checkbox" id="rotate">
+          <span class="switch-slider round"></span>
+        </label>
+      </div>
+      <div>
+        <input type="color" id="rotateColor" name="rotateColor"
+              value="#000000">
+        <label for="rotateColor">Luz</label>
+      </div>
+    </br>
+      <div>
+        <label class="checkbox-container">Ambiente
+          <input type="checkbox" checked="checked" id="ambientCheck">
+          <span class="checkmark"></span>
+        </label>
+      </div>
+
+      <div>
+        <label class="checkbox-container">Difusa
+          <input type="checkbox" checked="checked" id="diffuseCheck">
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div>
+        <label class="checkbox-container">Especular
+          <input type="checkbox" checked="checked" id="specularCheck">
+          <span class="checkmark"></span>
+        </label>
+      </div>
+    </form>
+  </aside>
+
+  <footer class="blackBox">
+    <div class="footer-copyright text-center">© 2019 Víctor Vaquero Martínez All Rights Reserved:
+      <a href="https://github.com/VictorVaquero">GitHub</a>
+    </div>
+  </footer>
+
+
+</body>
+
+</html>
