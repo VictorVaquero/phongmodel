@@ -4,7 +4,9 @@ Full light renderer with materials types, light types and textures.
 
 ## Getting Started
 
-Just download the project and get started, it's easy to change the materials and mess with it.
+First clone the project, then you'll need to setup a server to load the textures.
+
+Just get started, it's easy to change the materials and mess with it.
 
 ### Prerequisites
 
