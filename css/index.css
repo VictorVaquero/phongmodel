@@ -201,12 +201,17 @@
     }
 
     .greyBox {
-      background-color: #cfd8dc50;
+      background: rgba(207, 216, 220, 0.4);
       box-shadow: 1px 1px 5px grey;
+
+      -moz-transition: background.5s ease-in-out; 
+      -webkit-transition: background 0.5s ease-in-out; 
+      -o-transition: background 0.5s ease-in-out; 
+      -ms-transition: background 0.5s ease-in-out; 
+      transition: background 0.5s ease-in-out ;
     }
     .greyBox:hover {
-      background-color: #cfd8dc90;
-      transition: background-color 0.1s ease-in-out ;
+      background: rgba(207, 216, 220, 0.7);
     }
 
     .rotate{
